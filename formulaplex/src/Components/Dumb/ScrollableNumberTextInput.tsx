@@ -1,5 +1,5 @@
 import React from "react";
-import { makeIntOrZero } from "../Util";
+import { makeIntOrZero } from "../../Util/Util";
 
 const ScrollableNumberTextInput = ({
   value,

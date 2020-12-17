@@ -1,8 +1,8 @@
 import { createStore } from "redux";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
-import { ActionTypes } from "./Context/ActionTypes";
-import { initStore, StoreState } from "./Types";
+import { initStore, StoreState } from "../Types/Types";
+import { ActionTypes } from "./ActionTypes";
 
 const mainReducer = (
   state: StoreState = initStore,
@@ -17,8 +17,10 @@ const mainReducer = (
       return { ...state, currentProjectId: action.value };
     }
 
-    default:
+    default: {
+      console.log(`${action.type} as not handled by any reducer`);
       return state;
+    }
   }
 };
 

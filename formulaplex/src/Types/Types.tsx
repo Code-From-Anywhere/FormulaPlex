@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 import { RecursivePartial } from "tone/build/esm/core/util/Interface";
-import { newProject } from "./Util";
+import { newProject } from "../Util/Util";
 
 export type Note =
   | "Cbb-4"
@@ -847,23 +847,37 @@ export interface Project extends Unit {
   stepsPerBeat: number;
 }
 
+export interface ScreenWindow {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  routeName: string;
+  params: object;
+}
+
+export type PatternPlayersPerPattern = { [id: string]: PatternPlayer[] };
+
 export interface StoreState {
   projects: Project[];
 
   instruments: Instrument[];
-  patternPlayers: PatternPlayer[];
+  patternPlayers: PatternPlayersPerPattern;
   melodies: Melody[];
   timedMelodies: TimedMelody[];
   patterns: Pattern[];
   selectedMelodyId: string | null;
   selectedTimedMelodyId: string | null;
-  currentSymth: Sample;
+  currentSynth: Sample;
   selectedInstrumentId: string | null;
   selectedPatternId: string | null;
-  currentMelody: Melody | null;
+  recordingMelody: Melody | null;
   isRecordingMelody: boolean;
   currentKeys: Key[];
   currentProjectId: string | null;
+
+  windows: ScreenWindow[];
 }
 
 const firstProject = newProject("First Project");
@@ -873,19 +887,20 @@ export const initStore: StoreState = {
   projects: [firstProject],
   currentProjectId: firstProject.id,
   currentKeys: [],
-  currentMelody: null,
-  currentSymth: {
+  recordingMelody: null,
+  currentSynth: {
     sample: defaultSynth,
     type: "DuoSynth",
   },
   instruments: [],
   isRecordingMelody: false,
   melodies: [],
-  patternPlayers: [],
+  patternPlayers: {},
   patterns: [],
   selectedInstrumentId: null,
   selectedMelodyId: null,
   selectedPatternId: null,
   selectedTimedMelodyId: null,
   timedMelodies: [],
+  windows: [],
 };

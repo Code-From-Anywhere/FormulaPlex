@@ -1,21 +1,103 @@
+import { useRef } from "react";
 import { AiFillDelete } from "react-icons/ai";
 import { BiPlay } from "react-icons/bi";
 import { BsStopFill } from "react-icons/bs";
 import { IoMdAdd } from "react-icons/io";
+import { useDispatch, useSelector } from "react-redux";
 import * as Tone from "tone";
-import ColorBadge from "../Components/ColorBadge";
-import Style from "../Style";
-import { Melody, PatternPlayer, SynthTypes, synthTypes } from "../Types";
+import ColorBadge from "../Components/Dumb/ColorBadge";
+import {
+  actionSetCurrentSynth,
+  actionSetInstruments,
+  actionSetMelodies,
+  actionSetPatternPlayers,
+  actionSetPatterns,
+  actionSetSelectedInstrumentId,
+  actionSetSelectedMelodyId,
+  actionSetSelectedPatternId,
+  actionSetSelectedTimedMelodyId,
+  actionSetTimedMelodies,
+} from "../Context/Actions";
+import {
+  selectCurrentSynth,
+  selectInstruments,
+  selectMelodies,
+  selectPatternPlayers,
+  selectPatterns,
+  selectProjectPitch,
+  selectSelectedInstrumentId,
+  selectSelectedMelodyId,
+  selectSelectedPatternId,
+  selectSelectedTimedMelodyId,
+  selectTimedMelodies,
+} from "../Context/Selectors";
+import Style from "../Style/Style";
+import {
+  defaultSynthOptions,
+  Instrument,
+  Melody,
+  Pattern,
+  PatternPlayer,
+  PatternPlayersPerPattern,
+  Sample,
+  SynthTypes,
+  synthTypes,
+  TimedMelody,
+} from "../Types/Types";
 import {
   Constants,
+  generateColor,
+  generateId,
   generatePatternPlayerArray,
   generateSynth,
   startPlayPattern,
-  timeout,
-} from "../Util";
+} from "../Util/Util";
 
 const Sidebar = () => {
   const selectInstrumentRef = useRef<HTMLSelectElement | null>(null);
+
+  const dispatch = useDispatch();
+
+  const currentSynth = useSelector(selectCurrentSynth);
+  const setCurrentSynth = (sample: Sample) =>
+    dispatch(actionSetCurrentSynth(sample));
+  const setInstruments = (instruments: Instrument[]) =>
+    dispatch(actionSetInstruments(instruments));
+
+  const instruments = useSelector(selectInstruments);
+
+  const setTimedMelodies = (timedMelodies: TimedMelody[]) =>
+    dispatch(actionSetTimedMelodies(timedMelodies));
+
+  const projectPitch = useSelector(selectProjectPitch);
+  const setPatternPlayers = (patternPlayers: PatternPlayersPerPattern) =>
+    dispatch(actionSetPatternPlayers(patternPlayers));
+
+  const setPatterns = (patterns: Pattern[]) =>
+    dispatch(actionSetPatterns(patterns));
+
+  const setSelectedMelodyId = (id: string | null) =>
+    dispatch(actionSetSelectedMelodyId(id));
+
+  const setSelectedTimedMelodyId = (id: string | null) =>
+    dispatch(actionSetSelectedTimedMelodyId(id));
+
+  const setSelectedPatternId = (id: string | null) =>
+    dispatch(actionSetSelectedPatternId(id));
+
+  const setSelectedInstrumentId = (id: string | null) =>
+    dispatch(actionSetSelectedInstrumentId(id));
+
+  const setMelodies = (melodies: Melody[]) =>
+    dispatch(actionSetMelodies(melodies));
+  const timedMelodies = useSelector(selectTimedMelodies);
+  const melodies = useSelector(selectMelodies);
+  const patterns = useSelector(selectPatterns);
+  const selectedInstrumentId = useSelector(selectSelectedInstrumentId);
+  const selectedPatternId = useSelector(selectSelectedPatternId);
+  const selectedMelodyId = useSelector(selectSelectedMelodyId);
+  const selectedTimedMelodyId = useSelector(selectSelectedTimedMelodyId);
+  const patternPlayers = useSelector(selectPatternPlayers);
 
   const newInstrument = (soundString: SynthTypes) => {
     const defaults = defaultSynthOptions[soundString];
@@ -52,42 +134,21 @@ const Sidebar = () => {
     setTimedMelodies([...timedMelodies, newTimedMelody]);
   };
 
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-
   const renderMelodies = (
     <div>
       <p style={{ fontWeight: "bold" }}>Melodies:</p>
 
-      <button
-        onClick={() => {
-          setCurrentMelody(null);
-          setIsRecordingMelody(!isRecordingMelody);
-        }}
-      >
-        {isRecordingMelody ? "Stop recording" : "Start recording"}
-      </button>
-      {isRecordingMelody && (currentMelody?.melody.length || 0) > 0 && (
-        <button
-          onClick={() => {
-            setMelodies([...melodies, currentMelody as Melody]);
-            setCurrentMelody(null);
-            setIsRecordingMelody(false);
-          }}
-        >
-          Save Melody
-        </button>
-      )}
       {melodies.map((melody, index) => {
         const filteredTimedMelodies = timedMelodies.filter(
           (t) => t.melodyId === melody.id
         );
 
-        const isSelected = selectedMelody?.id === melody.id;
+        const isSelected = selectedMelodyId === melody.id;
         return (
           <div>
             <div
               onClick={() => {
-                setSelectedMelody(isSelected ? null : melody);
+                setSelectedMelodyId(isSelected ? null : melody.id);
               }}
               style={{
                 border: isSelected ? "1px dotted black" : undefined,
@@ -99,12 +160,13 @@ const Sidebar = () => {
               <BiPlay
                 size={Constants.ICON_SIZE}
                 onClick={async () => {
-                  for (const { note, modifier } of melody.melody) {
-                    setCurrentKey({ note, modifier });
-                    await timeout(250);
-                    setCurrentKey(null);
-                    await timeout(250);
-                  }
+                  // for (const { note, modifier } of melody.melody) {
+                  //   setCurrentKey({ note, modifier });
+                  //   await timeout(250);
+                  //   setCurrentKey(null);
+                  //   await timeout(250);
+                  // }
+                  //do this with Tone.Transport
                 }}
               />
               <AiFillDelete
@@ -124,14 +186,14 @@ const Sidebar = () => {
             {filteredTimedMelodies && (
               <div>
                 {filteredTimedMelodies.map((timedMelody, index) => {
-                  const isSelected = timedMelody.id === selectedTimedMelody?.id;
+                  const isSelected = timedMelody.id === selectedTimedMelodyId;
                   return (
                     <div
                       key={`${timedMelody.id}timedMelody`}
                       onClick={() =>
-                        selectedTimedMelody?.id === timedMelody.id
-                          ? setSelectedTimedMelody(null)
-                          : setSelectedTimedMelody(timedMelody)
+                        selectedTimedMelodyId === timedMelody.id
+                          ? setSelectedTimedMelodyId(null)
+                          : setSelectedTimedMelodyId(timedMelody.id)
                       }
                       style={{
                         border: isSelected ? "1px dotted black" : undefined,
@@ -170,7 +232,7 @@ const Sidebar = () => {
                       <AiFillDelete
                         size={Constants.ICON_SIZE}
                         onClick={() => {
-                          setSelectedTimedMelody(null);
+                          setSelectedTimedMelodyId(null);
                           setTimedMelodies(
                             timedMelodies.filter((t, i) => i !== index)
                           );
@@ -231,14 +293,19 @@ const Sidebar = () => {
                 key={`playIcon${pattern.id}${ourPatternPlayer}`}
                 size={Constants.ICON_SIZE}
                 onClick={() => {
-                  const patternPlayerArray = generatePatternPlayerArray(
-                    pattern.channels,
-                    instruments,
-                    timedMelodies
-                  );
-                  const array = patternPlayerArray as PatternPlayer[];
-                  setPatternPlayers({ ...patternPlayers, [pattern.id]: array });
-                  startPlayPattern(array, pitch, 1, true);
+                  if (projectPitch) {
+                    const patternPlayerArray = generatePatternPlayerArray(
+                      pattern.channels,
+                      instruments,
+                      timedMelodies
+                    );
+                    const array = patternPlayerArray as PatternPlayer[];
+                    setPatternPlayers({
+                      ...patternPlayers,
+                      [pattern.id]: array,
+                    });
+                    startPlayPattern(array, projectPitch, 1, true);
+                  }
                 }}
               />
             )}

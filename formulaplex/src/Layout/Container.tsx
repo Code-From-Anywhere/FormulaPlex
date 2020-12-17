@@ -1,4 +1,4 @@
-import Piano from "../Components/Piano";
+import Piano from "../Components/Smart/Piano";
 import Sidebar from "./Sidebar";
 import Toolbar from "./Toolbar";
 import Windows from "./Windows";

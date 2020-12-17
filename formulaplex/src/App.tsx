@@ -1,6 +1,6 @@
 import { Provider } from "react-redux";
+import { store } from "./Context/Store";
 import Container from "./Layout/Container";
-import { store } from "./Store";
 
 const App = () => {
   return (

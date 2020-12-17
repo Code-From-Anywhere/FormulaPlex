@@ -1,10 +1,22 @@
 import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useDispatch, useSelector } from "react-redux";
 import * as Tone from "tone";
+import {
+  actionSetCurrentKeys,
+  actionSetProject,
+  actionSetRecordingMelody,
+} from "../../Context/Actions";
+import {
+  selectCurrentKeys,
+  selectCurrentSynth,
+  selectIsRecordingMelody,
+  selectProjectPitch,
+  selectRecordingMelody,
+} from "../../Context/Selectors";
 //create a synth and connect it to the main output (your speakers)
-import { Key, Melody, Note, Sample } from "../Types";
-import { Constants, generateColor, modifyPitch } from "../Util";
-
+import { Key, Melody, Note } from "../../Types/Types";
+import { Constants, generateColor, modifyPitch } from "../../Util/Util";
 const baseNotes = ["c", "d", "e", "f", "g", "a", "b"];
 const modifiers = ["..", ".", "", "^", "*"];
 
@@ -17,35 +29,39 @@ const generateNewMelody = (firstKey: Key): Melody => ({
   melody: [{ note: firstKey.note, modifier: firstKey.modifier }],
 });
 
-const Piano = ({
-  sample,
-  isRecordingMelody,
-  setCurrentMelody,
-  currentMelody,
-  currentKey,
-  setCurrentKey,
-  pitch,
-  setPitch,
-}: {
-  sample: Sample;
-  isRecordingMelody: boolean;
-  setCurrentMelody: (melody: Melody) => void;
-  currentMelody: Melody | null;
-  currentKey: Key | null;
-  setCurrentKey: (key: Key | null) => void;
-  pitch: number;
-  setPitch: React.Dispatch<React.SetStateAction<number>>;
-}) => {
-  useHotkeys("=", () =>
-    setPitch((pitch: number) =>
-      pitch >= Constants.MAXIMUM_PITCH ? Constants.MAXIMUM_PITCH : pitch + 1
-    )
-  );
-  useHotkeys("-", () =>
-    setPitch((pitch) =>
-      pitch <= Constants.MINIMAL_PITCH ? Constants.MINIMAL_PITCH : pitch - 1
-    )
-  );
+const Piano = () => {
+  const dispatch = useDispatch();
+  const currentSynth = useSelector(selectCurrentSynth);
+  const isRecordingMelody = useSelector(selectIsRecordingMelody);
+  const recordingMelody = useSelector(selectRecordingMelody);
+  const currentKeys = useSelector(selectCurrentKeys);
+  const projectPitch = useSelector(selectProjectPitch);
+  const setRecordingMelody = (melody: Melody) =>
+    dispatch(actionSetRecordingMelody(melody));
+
+  const setCurrentKeys = (currentKeys: Key[]) =>
+    dispatch(actionSetCurrentKeys(currentKeys));
+  const setPitch = (pitch: number) =>
+    dispatch(actionSetProject("pitch", pitch));
+
+  useHotkeys("=", () => {
+    setPitch(
+      projectPitch && projectPitch >= Constants.MAXIMUM_PITCH
+        ? Constants.MAXIMUM_PITCH
+        : projectPitch
+        ? projectPitch + 1
+        : Constants.DEFAULT_PITCH
+    );
+  });
+  useHotkeys("-", () => {
+    setPitch(
+      projectPitch && projectPitch <= Constants.MINIMAL_PITCH
+        ? Constants.MINIMAL_PITCH
+        : projectPitch
+        ? projectPitch - 1
+        : Constants.DEFAULT_PITCH
+    );
+  });
 
   useEffect(() => {
     window.addEventListener("keydown", (event) => {
@@ -55,43 +71,43 @@ const Piano = ({
       // const cmd = event.metaKey;
 
       if (baseNotes.includes(event.key.toLowerCase())) {
-        if (currentKey?.note !== event.key) {
-          setCurrentKey({ note: event.key, modifier: "" });
+        if (!currentKeys.find((x) => x.note === event.key)) {
+          setCurrentKeys([...currentKeys, { note: event.key, modifier: "" }]);
         }
       }
     });
 
     window.addEventListener("keyup", (event) => {
-      setCurrentKey(null);
+      setCurrentKeys(currentKeys.filter((x) => x.note !== event.key));
     });
   }, []);
 
   useEffect(() => {
-    if (currentKey) {
+    if (currentKeys && projectPitch) {
       if (isRecordingMelody) {
-        setCurrentMelody(
-          currentMelody
+        setRecordingMelody(
+          recordingMelody
             ? {
-                ...currentMelody,
-                melody: [...currentMelody.melody, currentKey],
+                ...recordingMelody,
+                melody: [...recordingMelody.melody, currentKeys[0]],
               }
-            : generateNewMelody(currentKey)
+            : generateNewMelody(currentKeys[0])
         );
       }
 
-      const modifiedPitch = modifyPitch(pitch, currentKey.modifier);
+      const modifiedPitch = modifyPitch(projectPitch, currentKeys[0].modifier);
 
-      const convertedKeyPitchCombination: Note = `${currentKey.note}${modifiedPitch}` as Note;
+      const convertedKeyPitchCombination: Note = `${currentKeys[0].note}${modifiedPitch}` as Note;
 
-      sample.sample.triggerAttack(
+      currentSynth.sample.triggerAttack(
         convertedKeyPitchCombination,
         Tone.context.currentTime
       );
     } else {
-      sample.sample.triggerRelease();
+      currentSynth.sample.triggerRelease();
     }
   }, [
-    currentKey,
+    currentKeys,
     // pitch,
     // sample,
     // currentMelody,
@@ -132,9 +148,19 @@ const Piano = ({
                   <div
                     key={`midKey${note.note}${note.modifier}`}
                     onMouseDown={() =>
-                      setCurrentKey({ note: midNote, modifier: note.modifier })
+                      setCurrentKeys([
+                        ...currentKeys,
+                        { note: midNote, modifier: note.modifier },
+                      ])
                     }
-                    onMouseUp={() => setCurrentKey(null)}
+                    onMouseUp={() =>
+                      setCurrentKeys(
+                        currentKeys.filter(
+                          (x) =>
+                            x.note === midNote && x.modifier === note.modifier
+                        )
+                      )
+                    }
                     style={{
                       position: "absolute",
                       top: 0,
@@ -142,11 +168,12 @@ const Piano = ({
                         35 + 50 * index + 50 * modifierIndex * baseNotes.length,
                       width: 30,
                       height: 100,
-                      backgroundColor:
-                        currentKey?.note === midNote &&
-                        currentKey.modifier === note.modifier
-                          ? "#404040"
-                          : "black",
+                      backgroundColor: currentKeys.find(
+                        (x) =>
+                          x.note === midNote && x.modifier === note.modifier
+                      )
+                        ? "#404040"
+                        : "black",
                     }}
                   >
                     <p style={{ color: "white", fontWeight: "bold" }}>
@@ -172,17 +199,26 @@ const Piano = ({
                 const extraNoteModified = extraNote
                   ? `(${extraNote}${modifier})`
                   : null;
+
+                const isKeySelected = !!currentKeys.find(
+                  (x) => x.modifier === modifier && x.note === note
+                );
+
                 return (
                   <div
                     key={`key${note}${modifier}`}
-                    onMouseDown={() => setCurrentKey({ note, modifier })}
-                    onMouseUp={() => setCurrentKey(null)}
+                    onMouseDown={() =>
+                      setCurrentKeys([...currentKeys, { note, modifier }])
+                    }
+                    onMouseUp={() =>
+                      setCurrentKeys(
+                        currentKeys.filter(
+                          (x) => x.note !== note && x.modifier !== modifier
+                        )
+                      )
+                    }
                     style={{
-                      backgroundColor:
-                        currentKey?.note === note &&
-                        currentKey?.modifier === modifier
-                          ? "#CCC"
-                          : "white",
+                      backgroundColor: isKeySelected ? "#CCC" : "white",
                       borderWidth: "1px",
                       borderColor: "black",
                       borderStyle: "solid",
@@ -214,8 +250,12 @@ const Piano = ({
       </div>
       <div style={{ width: 300, backgroundColor: "#DDD" }}>
         <p style={{ fontSize: 24 }}>
-          {currentKey?.note}
-          {modifyPitch(pitch, currentKey?.modifier)}
+          {currentKeys.map((key) => {
+            return `${key?.note} ${modifyPitch(
+              projectPitch || Constants.DEFAULT_PITCH,
+              key?.modifier
+            )}`;
+          })}
         </p>
       </div>
     </div>

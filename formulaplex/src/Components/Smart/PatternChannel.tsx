@@ -1,19 +1,18 @@
-import { produce } from "immer";
 import React from "react";
 import { IoMdAdd } from "react-icons/io";
 import { useSelector } from "react-redux";
-import { selectProject } from "../Context/Selectors";
+import { selectProject } from "../../Context/Selectors";
+import useUpdatePatternChannel from "../../Hooks/useUpdatePatternChannel";
 import {
   Channel,
   Instrument,
-  Pattern,
   PatternPlayerPlayable,
   TimedMelody,
-} from "../Types";
-import { Constants, generatePatternPlayerPlayable } from "../Util";
-import OnOffButton from "./OnOffButton";
-import ScrollableNumberTextInput from "./ScrollableNumberTextInput";
-import ScrollableWheelInput from "./ScrollableWheelInput";
+} from "../../Types/Types";
+import { Constants, generatePatternPlayerPlayable } from "../../Util/Util";
+import OnOffButton from "../Dumb/OnOffButton";
+import ScrollableNumberTextInput from "../Dumb/ScrollableNumberTextInput";
+import ScrollableWheelInput from "../Dumb/ScrollableWheelInput";
 
 const PatternChannel = ({
   instrument,
@@ -21,10 +20,7 @@ const PatternChannel = ({
   pitch,
   channel,
   onClick,
-  patternId,
   channelIndex,
-  patterns,
-  setPatterns,
 }: {
   instrument?: Instrument;
   timedMelody?: TimedMelody;
@@ -33,55 +29,49 @@ const PatternChannel = ({
   onClick?: () => void;
   patternId?: string;
   channelIndex?: number;
-  patterns?: Pattern[];
-  setPatterns?: React.Dispatch<React.SetStateAction<Pattern[]>>;
 }) => {
   const project = useSelector(selectProject);
+  const updatePatternChannel = useUpdatePatternChannel();
+
   if (!project) {
     return null;
   }
 
-  const setChannel = (key: keyof Channel, value: Channel[keyof Channel]) => {
-    if (patterns && patternId && channelIndex !== undefined && setPatterns) {
-      setPatterns(
-        produce(patterns, (draft) => {
-          const pattern = draft.find((pattern) => pattern.id === patternId);
-          if (pattern) {
-            pattern.channels[channelIndex][key] = value as never;
-          }
-        })
-      );
-    }
-  };
   const steps = new Array(project.beatsPerBar * project.stepsPerBeat)
     .fill(0)
     .map((x, index) => index);
 
-  console.log(steps);
-
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
       <div style={{ minWidth: 100 }}>
-        {channel ? (
+        {channel && channelIndex !== undefined ? (
           <div style={{ display: "flex", flexDirection: "row" }}>
             <OnOffButton
               value={channel.isOn}
-              onChange={(value) => setChannel("isOn", value)}
+              onChange={(value) =>
+                updatePatternChannel(channelIndex, "isOn", value)
+              }
             />
             <ScrollableWheelInput
               value={channel.basePitch}
-              onChange={(value) => setChannel("basePitch", value)}
+              onChange={(value) =>
+                updatePatternChannel(channelIndex, "basePitch", value)
+              }
               minValue={Constants.MINIMAL_PITCH}
               maxValue={Constants.MAXIMUM_PITCH}
             />
             <ScrollableWheelInput
               value={channel.velocity}
-              onChange={(value) => setChannel("velocity", value)}
+              onChange={(value) =>
+                updatePatternChannel(channelIndex, "velocity", value)
+              }
             />
 
             <ScrollableNumberTextInput
               value={channel.outputMixerTrack}
-              onChange={(value) => setChannel("outputMixerTrack", value)}
+              onChange={(value) =>
+                updatePatternChannel(channelIndex, "outputMixerTrack", value)
+              }
               minValue={1}
               maxValue={Constants.NUM_MIXER_TRACKS}
             />

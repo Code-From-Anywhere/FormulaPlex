@@ -7,7 +7,7 @@ import {
   Step,
   SynthTypes,
   TimedMelody,
-} from "./Types";
+} from "../Types/Types";
 
 export const newProject = (name: string) => ({
   id: generateId(),
@@ -27,6 +27,7 @@ export const Constants = {
   DEFAULT_PATTERN_QUANTIZATION: 1 / 4,
   NUM_MIXER_TRACKS: 10,
   STEP_WIDTH: 40,
+  DEFAULT_PITCH: 4,
 };
 
 export const makeIntOrZero = (value: string): number =>
