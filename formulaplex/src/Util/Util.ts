@@ -9,7 +9,7 @@ import {
   TimedMelody,
 } from "../Types/Types";
 
-export const newProject = (name: string) => ({
+export const generateProject = (name: string) => ({
   id: generateId(),
   beatsPerBar: 4,
   bpm: 120,

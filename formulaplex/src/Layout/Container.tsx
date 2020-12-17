@@ -1,6 +1,11 @@
 import Piano from "../Components/Smart/Piano";
 import Sidebar from "./Sidebar";
-import Toolbar from "./Toolbar";
+import Menus from "./Toolbar/Menus";
+import Monitor from "./Toolbar/Monitor";
+import PeakMeter from "./Toolbar/PeakMeter";
+import PlayActions from "./Toolbar/PlayActions";
+import RecordButton from "./Toolbar/RecordButton";
+import TimeIndicator from "./Toolbar/TimeIndicator";
 import Windows from "./Windows";
 
 function Container() {
@@ -16,8 +21,13 @@ function Container() {
       }}
     >
       <div style={{ flex: 1 }}>
-        <div style={{ height: "5vh" }}>
-          <Toolbar />
+        <div style={{ height: "5vh", display: "flex", flexDirection: "row" }}>
+          <Menus />
+          <PlayActions />
+          <TimeIndicator />
+          <Monitor />
+          <PeakMeter />
+          <RecordButton />
         </div>
         <div
           style={{

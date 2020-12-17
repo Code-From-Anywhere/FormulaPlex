@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 import { RecursivePartial } from "tone/build/esm/core/util/Interface";
-import { newProject } from "../Util/Util";
+import { generateProject } from "../Util/Util";
 
 export type Note =
   | "Cbb-4"
@@ -847,8 +847,16 @@ export interface Project extends Unit {
   stepsPerBeat: number;
 }
 
+export interface WindowInitializer {
+  routeName: string;
+  width?: number;
+  height?: number;
+  params?: object;
+  title: string;
+}
 export interface ScreenWindow {
   id: string;
+  title: string;
   x: number;
   y: number;
   width: number;
@@ -880,7 +888,7 @@ export interface StoreState {
   windows: ScreenWindow[];
 }
 
-const firstProject = newProject("First Project");
+const firstProject = generateProject("First Project");
 const defaultSynth = new Tone.DuoSynth().toDestination();
 
 export const initStore: StoreState = {

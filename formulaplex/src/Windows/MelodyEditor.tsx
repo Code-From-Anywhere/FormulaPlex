@@ -5,15 +5,18 @@ import {
   actionSetSelectedMelodyId,
 } from "../Context/Actions";
 import { selectMelodies, selectSelectedMelody } from "../Context/Selectors";
+import { Melody } from "../Types/Types";
 
 const MelodyEditor = () => {
   const dispatch = useDispatch();
   const selectedMelody = useSelector(selectSelectedMelody);
   const melodies = useSelector(selectMelodies);
-  const setSelectedMelodyId = (id) => dispatch(actionSetSelectedMelodyId(id));
-  const setMelodies = (melodies) => dispatch(actionSetMelodies(melodies));
+  const setSelectedMelodyId = (id: string) =>
+    dispatch(actionSetSelectedMelodyId(id));
+  const setMelodies = (melodies: Melody[]) =>
+    dispatch(actionSetMelodies(melodies));
 
-  return (
+  return selectedMelody ? (
     <div>
       <input
         type="text"
@@ -31,6 +34,8 @@ const MelodyEditor = () => {
         {selectedMelody.melody.map((key) => `${key.note}${key.modifier}, `)}
       </p>
     </div>
+  ) : (
+    <div />
   );
 };
 

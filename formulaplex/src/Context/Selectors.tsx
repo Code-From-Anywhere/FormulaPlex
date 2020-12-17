@@ -15,11 +15,14 @@ export const selectProject = (state: StoreState): Project | undefined => {
 export const selectPatterns = (state: StoreState) => {
   return state.patterns;
 };
+export const selectProjects = (state: StoreState) => {
+  return state.projects;
+};
 
-export const selectPattern = (id: string) => (
+export const selectPattern = (id: string | null) => (
   state: StoreState
 ): Pattern | undefined => {
-  return state.patterns.find((x) => x.id === id);
+  return id ? state.patterns.find((x) => x.id === id) : undefined;
 };
 
 export const selectSelectedInstrument = (

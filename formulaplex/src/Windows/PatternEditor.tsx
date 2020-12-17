@@ -1,4 +1,31 @@
-const renderSelectedPattern = (pattern?: Pattern) => {
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import PatternChannel from "../Components/Smart/PatternChannel";
+import { actionSetPatterns } from "../Context/Actions";
+import {
+  selectInstruments,
+  selectPattern,
+  selectPatterns,
+  selectProjectPitch,
+  selectSelectedPatternId,
+  selectTimedMelodies,
+} from "../Context/Selectors";
+import { Instrument, Pattern, TimedMelody } from "../Types/Types";
+import { Constants, makeIntOrZero, selectRandomEntry } from "../Util/Util";
+const PatternEditor = () => {
+  const dispatch = useDispatch();
+
+  const selectedPatternId = useSelector(selectSelectedPatternId);
+  const pattern = useSelector(selectPattern(selectedPatternId));
+  const timedMelodies = useSelector(selectTimedMelodies);
+  const patterns = useSelector(selectPatterns);
+
+  const projectPitch = useSelector(selectProjectPitch);
+  const instruments = useSelector(selectInstruments);
+
+  const setPatterns = (patterns: Pattern[]) =>
+    dispatch(actionSetPatterns(patterns));
+
   if (!pattern) return null;
 
   return (
@@ -62,10 +89,8 @@ const renderSelectedPattern = (pattern?: Pattern) => {
               <PatternChannel
                 instrument={instrument}
                 timedMelody={timedMelody}
-                pitch={pitch}
+                pitch={projectPitch || Constants.DEFAULT_PITCH}
                 channel={channel}
-                patterns={patterns}
-                setPatterns={setPatterns}
                 patternId={pattern.id}
                 channelIndex={index}
               />
@@ -76,7 +101,7 @@ const renderSelectedPattern = (pattern?: Pattern) => {
         })}
 
         <PatternChannel
-          pitch={pitch}
+          pitch={projectPitch || Constants.DEFAULT_PITCH}
           onClick={() => {
             const getRandomInstrumentId = () =>
               selectRandomEntry<Instrument>(instruments).id;
@@ -107,3 +132,5 @@ const renderSelectedPattern = (pattern?: Pattern) => {
     </div>
   );
 };
+
+export default PatternEditor;

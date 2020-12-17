@@ -12,7 +12,7 @@ import {
   selectSelectedInstrument,
   selectSelectedTimedMelody,
 } from "../Context/Selectors";
-import { Pattern } from "../Types/Types";
+import { Instrument, Pattern, Sample } from "../Types/Types";
 import {
   Constants,
   generateColor,
@@ -29,12 +29,14 @@ const InstrumentEditor = () => {
   const instruments = useSelector(selectInstruments);
   const currentSynth = useSelector(selectCurrentSynth);
 
-  const setInstruments = (instruments) =>
+  const setInstruments = (instruments: Instrument[]) =>
     dispatch(actionSetInstruments(instruments));
 
-  const setPatterns = (patterns) => dispatch(actionSetPatterns(patterns));
+  const setPatterns = (patterns: Pattern[]) =>
+    dispatch(actionSetPatterns(patterns));
 
-  const setCurrentSynth = (synth) => dispatch(actionSetCurrentSynth(synth));
+  const setCurrentSynth = (synth: Sample) =>
+    dispatch(actionSetCurrentSynth(synth));
 
   return (
     <div>

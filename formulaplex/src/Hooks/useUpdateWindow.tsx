@@ -14,9 +14,11 @@ const useUpdateWindow = () => {
     dispatch(
       actionSetWindows(
         produce(windows, (draft) => {
-          let window = draft.find((x) => x.id === windowId);
-          if (window) {
-            window = { ...window, ...value };
+          const windowIndex = draft.findIndex(
+            (x: ScreenWindow) => x.id === windowId
+          );
+          if (windowIndex > -1) {
+            draft[windowIndex] = { ...draft[windowIndex], ...value };
           }
         })
       )

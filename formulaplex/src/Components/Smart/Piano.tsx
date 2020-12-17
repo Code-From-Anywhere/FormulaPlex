@@ -83,7 +83,7 @@ const Piano = () => {
   }, []);
 
   useEffect(() => {
-    if (currentKeys && projectPitch) {
+    if (currentKeys.length > 0 && projectPitch) {
       if (isRecordingMelody) {
         setRecordingMelody(
           recordingMelody

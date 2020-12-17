@@ -1,25 +1,17 @@
-import { ContextMenu, ContextMenuTrigger, MenuItem } from "react-contextmenu";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  actionOpenWindow,
   actionSetIsRecordingMelody,
   actionSetMelodies,
   actionSetRecordingMelody,
-} from "../Context/Actions";
+} from "../../Context/Actions";
 import {
   selectIsRecordingMelody,
   selectMelodies,
   selectRecordingMelody,
-} from "../Context/Selectors";
-import { Melody } from "../Types/Types";
-const Toolbar = () => {
+} from "../../Context/Selectors";
+import { Melody } from "../../Types/Types";
+const RecordButton = () => {
   const dispatch = useDispatch();
-  const openWindow = (window: string) => dispatch(actionOpenWindow(window));
-
-  const openPatternEditor = () => openWindow("patternEditor");
-  const openTracklist = () => openWindow("tracklist");
-  const openInstrumentEditor = () => openWindow("instrumentEditor");
-  const openMelodyEditor = () => openWindow("melodyEditor");
 
   const recordingMelody = useSelector(selectRecordingMelody);
   const isRecordingMelody = useSelector(selectIsRecordingMelody);
@@ -36,17 +28,6 @@ const Toolbar = () => {
 
   return (
     <div>
-      <ContextMenuTrigger id="viewMenu" mouseButton={0}>
-        <div>View</div>
-      </ContextMenuTrigger>
-
-      <ContextMenu id="viewMenu">
-        <MenuItem onClick={openPatternEditor}>Pattern Editor</MenuItem>
-        <MenuItem onClick={openTracklist}>TrackList</MenuItem>
-        <MenuItem onClick={openInstrumentEditor}>Instrument Editor</MenuItem>
-        <MenuItem onClick={openMelodyEditor}>Melody Editor</MenuItem>
-      </ContextMenu>
-
       <button
         onClick={() => {
           setRecordingMelody(null);
@@ -69,4 +50,5 @@ const Toolbar = () => {
     </div>
   );
 };
-export default Toolbar;
+
+export default RecordButton;

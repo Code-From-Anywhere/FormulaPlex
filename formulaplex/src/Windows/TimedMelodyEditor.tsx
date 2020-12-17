@@ -1,5 +1,25 @@
-const renderSelectedTimedMelody = (selectedTimedMelody: TimedMelody) => {
-  return (
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  actionSetSelectedTimedMelodyId,
+  actionSetTimedMelodies,
+} from "../Context/Actions";
+import {
+  selectSelectedTimedMelody,
+  selectTimedMelodies,
+} from "../Context/Selectors";
+import { Key, KeyTime, TimedMelody } from "../Types/Types";
+
+const TimedMelodyEditor = () => {
+  const dispatch = useDispatch();
+  const selectedTimedMelody = useSelector(selectSelectedTimedMelody);
+  const timedMelodies = useSelector(selectTimedMelodies);
+  const setSelectedTimedMelodyId = (id: string) =>
+    dispatch(actionSetSelectedTimedMelodyId(id));
+  const setTimedMelodies = (timedMelodies: TimedMelody[]) =>
+    dispatch(actionSetTimedMelodies(timedMelodies));
+
+  return selectedTimedMelody ? (
     <div>
       <input
         type="text"
@@ -13,7 +33,7 @@ const renderSelectedTimedMelody = (selectedTimedMelody: TimedMelody) => {
             ...selectedTimedMelody,
             name: e.target.value,
           };
-          setSelectedTimedMelody(newTimedMelody);
+          setSelectedTimedMelodyId(newTimedMelody.id);
           setTimedMelodies(
             timedMelodies.map((x) =>
               x.id === selectedTimedMelody.id ? newTimedMelody : x
@@ -55,7 +75,7 @@ const renderSelectedTimedMelody = (selectedTimedMelody: TimedMelody) => {
                       ),
                     };
 
-                    setSelectedTimedMelody(newTimedMelody);
+                    setSelectedTimedMelodyId(newTimedMelody.id);
                     setTimedMelodies(
                       timedMelodies.map((x) =>
                         x.id === selectedTimedMelody.id ? newTimedMelody : x
@@ -84,7 +104,7 @@ const renderSelectedTimedMelody = (selectedTimedMelody: TimedMelody) => {
                       ),
                     };
 
-                    setSelectedTimedMelody(newTimedMelody);
+                    setSelectedTimedMelodyId(newTimedMelody.id);
                     setTimedMelodies(
                       timedMelodies.map((x) =>
                         x.id === selectedTimedMelody.id ? newTimedMelody : x
@@ -98,5 +118,8 @@ const renderSelectedTimedMelody = (selectedTimedMelody: TimedMelody) => {
         </table>
       </div>
     </div>
+  ) : (
+    <div />
   );
 };
+export default TimedMelodyEditor;

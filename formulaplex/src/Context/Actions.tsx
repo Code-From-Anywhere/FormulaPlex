@@ -8,10 +8,11 @@ import {
   Sample,
   ScreenWindow,
   TimedMelody,
+  WindowInitializer,
 } from "../Types/Types";
 import { ActionTypes } from "./ActionTypes";
 
-export const actionOpenWindow = (window: string) => {
+export const actionOpenWindow = (window: WindowInitializer) => {
   return { type: ActionTypes.OPEN_WINDOW, value: window };
 };
 
@@ -20,6 +21,10 @@ export const actionSetWindows = (windows: ScreenWindow[]) => {
 };
 export const actionSetCurrentProject = (project: string) => {
   return { type: ActionTypes.SET_CURRENT_PROJECT, value: project };
+};
+
+export const actionSetProjects = (projects: Project[]) => {
+  return { type: ActionTypes.SET_PROJECTS, value: projects };
 };
 
 export const actionSetPatterns = (patterns: Pattern[]) => {
